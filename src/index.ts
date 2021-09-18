@@ -27,8 +27,12 @@ program
     }
 
     // js
-    const jsName = wasmName.replace(/_bg\.wasm/gs, ".js");
-    const jsPath = join(rootDir, jsName);
+    let jsName = wasmName.replace(".wasm", ".js");
+    let jsPath = join(rootDir, jsName);
+    if (!existsSync(jsPath)) {
+      jsName = wasmName.replace(/_bg\.wasm/gs, ".js");
+      jsPath = join(rootDir, jsName);
+    }
     if (!existsSync(jsPath)) {
       console.error(`${rootDir} has no js file ${jsPath}`);
       return;
