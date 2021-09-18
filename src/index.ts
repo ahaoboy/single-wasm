@@ -5,7 +5,7 @@ import { Command } from "commander";
 import { outputFileSync } from "fs-extra";
 const program = new Command();
 const cwd = process.cwd();
-program.version("0.0.1");
+
 program
   .argument("[inDir]")
   .option("-d, --dir [type]", "output dir", ".")
@@ -27,10 +27,10 @@ program
     }
 
     // js
-    let jsName = wasmName.replace(".wasm", ".js");
+    let jsName = wasmName.replace(/_bg\.wasm/gs, ".js");
     let jsPath = join(rootDir, jsName);
     if (!existsSync(jsPath)) {
-      jsName = wasmName.replace(/_bg\.wasm/gs, ".js");
+      let jsName = wasmName.replace(".wasm", ".js");
       jsPath = join(rootDir, jsName);
     }
     if (!existsSync(jsPath)) {
