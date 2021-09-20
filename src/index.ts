@@ -43,11 +43,12 @@ program
     const jsOutStr = jsStr.replace(reg, getCode(bufferData));
 
     // out
-    const outName =
-      options.name && options.name?.endsWith?.(".js")
-        ? options.name
-        : options.name + ".js";
-    const outPath = join(cwd, options.dir, outName || "single_" + jsName);
+    const outName = !options.name
+      ? "single_" + jsName
+      : options.name?.endsWith?.(".js")
+      ? options.name
+      : options.name + ".js";
+    const outPath = join(cwd, options.dir, outName);
     outputFileSync(outPath, jsOutStr);
   });
 program.parse();
