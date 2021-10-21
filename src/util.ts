@@ -1,4 +1,9 @@
-export const getCode = (s: String) => {
+export const getImports = (code: string) => {
+  const re =/const imports = {};(.*?)if \(typeof input === 'string'/ms
+  const imports = code.match(re)![1];
+  return imports;
+};
+export const getCode = (s: string, imports: string) => {
   return `
 const decodeBase64 =
 typeof atob === "function"? atob: function (input) {
@@ -28,30 +33,28 @@ typeof atob === "function"? atob: function (input) {
     return output;
 };  
     
-  function intArrayFromBase64(s) {
-    try {
-      const decoded = decodeBase64(s);
-      const bytes = new Uint8Array(decoded.length);
-      for (let i = 0; i < decoded.length; ++i) {
-        bytes[i] = decoded.charCodeAt(i);
-      }
-      return bytes;
-    } catch (_) {
-      throw new Error("Converting base64 string to bytes failed.");
+function intArrayFromBase64(s) {
+  try {
+    const decoded = decodeBase64(s);
+    const bytes = new Uint8Array(decoded.length);
+    for (let i = 0; i < decoded.length; ++i) {
+      bytes[i] = decoded.charCodeAt(i);
     }
+    return bytes;
+  } catch (_) {
+    throw new Error("Converting base64 string to bytes failed.");
   }
+}
 const wasmBase64 = "${s}";
-async function load(imports={}) {
+
+async function load(imports = {}) {
     const bytes = intArrayFromBase64(wasmBase64);
     return await WebAssembly.instantiate(bytes, imports);
 }
 
 async function init() {
     const imports = {};
-    imports.wbg = {};
-    imports.wbg.__wbindgen_throw = function(arg0, arg1) {
-        throw new Error(getStringFromWasm0(arg0, arg1));
-    };
+    ${imports}
     const { instance, module } = await load(imports);
     wasm = instance.exports;
     init.__wbindgen_wasm_module = module;

@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync, existsSync } from "fs";
 import { join } from "path";
-import { getCode } from "./util";
+import { getCode, getImports } from "./util";
 import { Command } from "commander";
 import { outputFileSync } from "fs-extra";
 const program = new Command();
@@ -40,7 +40,8 @@ program
     const jsStr = readFileSync(jsPath, "utf8");
     const reg = /async function load(.*?)export default init;/gs;
     const bufferData = readFileSync(wasmPath).toString("base64");
-    const jsOutStr = jsStr.replace(reg, getCode(bufferData));
+    const imports = getImports(jsStr);
+    const jsOutStr = jsStr.replace(reg, getCode(bufferData, imports));
 
     // out
     const outName = !options.name
