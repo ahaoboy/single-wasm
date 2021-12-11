@@ -1,11 +1,11 @@
 {
-  "version": "0.4.1",
+  "version": "0.5.1",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
+  "type": "module",
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "bin": {
     "single-wasm": "./dist/index.js"
@@ -23,7 +23,6 @@
     "size": "size-limit",
     "analyze": "size-limit --why"
   },
-  "peerDependencies": {},
   "husky": {
     "hooks": {
       "pre-commit": "tsdx lint"
@@ -60,6 +59,8 @@
     "@types/fs-extra": "^9.0.12",
     "commander": "^8.2.0",
     "fs-extra": "^10.0.0",
-    "minimist": "^1.2.5"
+    "minimist": "^1.2.5",
+    "regenerator-runtime": "^0.13.9",
+    "tsup": "^5.11.1"
   }
 }

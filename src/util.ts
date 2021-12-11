@@ -1,7 +1,12 @@
 export const getImports = (code: string) => {
-  const re =/const imports = {};(.*?)if \(typeof input === 'string'/ms
+  const re = /const imports = {};(.*?)if \(typeof input ===/ms;
   const imports = code.match(re)![1];
   return imports;
+};
+export const getInit = (code: string) => {
+  const re = /async function init\(input\) \{(.*?)return wasm;/ms;
+  const imports = code.match(re)![0];
+  return imports + "\n}";
 };
 export const getCode = (s: string, imports: string) => {
   return `
@@ -47,7 +52,7 @@ function intArrayFromBase64(s) {
 }
 const wasmBase64 = "${s}";
 
-async function load(imports = {}) {
+async function loadWasm(imports = {}) {
     const bytes = intArrayFromBase64(wasmBase64);
     return await WebAssembly.instantiate(bytes, imports);
 }
@@ -55,12 +60,10 @@ async function load(imports = {}) {
 async function init() {
     const imports = {};
     ${imports}
-    const { instance, module } = await load(imports);
+    const { instance, module } = await loadWasm(imports);
     wasm = instance.exports;
     init.__wbindgen_wasm_module = module;
     return wasm;
 }
-
-export default init;
 `;
 };

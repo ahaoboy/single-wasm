@@ -5,5 +5,5 @@ yarn add single-wasm -g
 
 # use
 ```
-single-wasm ./pkg -d single -n single.js
+single-wasm ./pkg -d single-dir -o single.js
 ```

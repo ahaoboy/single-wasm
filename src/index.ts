@@ -1,16 +1,17 @@
 import { readFileSync, readdirSync, existsSync } from "fs";
-import { join } from "path";
-import { getCode, getImports } from "./util";
+import { join, relative } from "path";
+import { getCode, getImports, getInit } from "./util";
 import { Command } from "commander";
 import { outputFileSync } from "fs-extra";
 const program = new Command();
 const cwd = process.cwd();
+import { build } from "tsup";
 
 program
   .argument("[inDir]")
   .option("-d, --dir [type]", "output dir", ".")
-  .option("-n, --name [type]", "output name")
-  .action((inDir) => {
+  .option("-o, --name [type]", "output name")
+  .action(async (inDir: string) => {
     const rootDir = join(cwd, inDir);
     const options = program.opts();
     const fileList = readdirSync(rootDir);
@@ -37,8 +38,22 @@ program
       console.error(`${rootDir} has no js file ${jsPath}`);
       return;
     }
-    const jsStr = readFileSync(jsPath, "utf8");
-    const reg = /async function load(.*?)export default init;/gs;
+    const rePath = relative(cwd, jsPath).replace("\\", "/");
+    console.log(`jsPath`, jsPath);
+    console.log(`rePath`, rePath);
+    const tsupName = "tsup_" + jsName;
+    const tsupPath = join(rootDir, "esm", tsupName);
+    await build({
+      entry: { [tsupName.slice(0, -3)]: rePath },
+      outDir: rootDir,
+      format: ["esm"],
+      legacyOutput: true,
+    });
+    console.log("tsupPath", tsupPath);
+    const jsStr = readFileSync(tsupPath, "utf8");
+
+    const reg = getInit(jsStr);
+
     const bufferData = readFileSync(wasmPath).toString("base64");
     const imports = getImports(jsStr);
     const jsOutStr = jsStr.replace(reg, getCode(bufferData, imports));
