@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, existsSync } from "fs";
 import { join, relative } from "path";
 import { getCode, getImports, getInit } from "./util";
 import { Command } from "commander";
-import { outputFileSync } from "fs-extra";
+import { outputFileSync, removeSync } from "fs-extra";
 const program = new Command();
 const cwd = process.cwd();
 import { build } from "tsup";
@@ -39,8 +39,6 @@ program
       return;
     }
     const rePath = relative(cwd, jsPath).replace("\\", "/");
-    console.log(`jsPath`, jsPath);
-    console.log(`rePath`, rePath);
     const tsupName = "tsup_" + jsName;
     const tsupPath = join(rootDir, "esm", tsupName);
     await build({
@@ -49,11 +47,9 @@ program
       format: ["esm"],
       legacyOutput: true,
     });
-    console.log("tsupPath", tsupPath);
     const jsStr = readFileSync(tsupPath, "utf8");
-
+    removeSync(join(rootDir, "esm"))
     const reg = getInit(jsStr);
-
     const bufferData = readFileSync(wasmPath).toString("base64");
     const imports = getImports(jsStr);
     const jsOutStr = jsStr.replace(reg, getCode(bufferData, imports));
