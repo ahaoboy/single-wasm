@@ -1,5 +1,5 @@
 {
-  "version": "0.5.2",
+  "version": "0.5.4",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -16,7 +16,7 @@
     "start": "tsdx watch",
     "dev": "tsdx watch",
     "build": "tsdx build",
-    "test": "tsdx test",
+    "test": "node ./dist/index.js  ./pkg -d tmp -o single.js",
     "lint": "tsdx lint",
     "prepare": "tsdx build",
     "size": "size-limit",
