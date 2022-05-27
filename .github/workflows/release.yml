@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release Tag(canary, beta, latest)'
+        required: true
+        default: 'beta'
+      branch:
+        description: 'Release Branch(confirm release branch)'
+        required: true
+        default: 'main'
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.branch }}
+      - name: setup npm
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16.x'
+          registry-url: 'https://registry.npmjs.org'
+          env:
+            NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Release
+        with:
+          tag: ${{ github.event.inputs.tag }}
+          branch: ${{ github.event.inputs.branch }}
+          type: 'release'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          REF: ${{ github.ref }}
+        - run: npm install pnpm -g
+            pnpm install
+            npm run build
+            npm run test
+            npm publish --tag $tag
