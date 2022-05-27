@@ -26,7 +26,8 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
-      run: |
+      - name: install
+        run: |
           npm install pnpm -g
           npm install tsdx -g
           pnpm install
@@ -43,8 +44,7 @@ jobs:
           node-version: 16
           registry-url: https://registry.npmjs.org/
       - name: pub
-        run: npm publish --tag $Tag 
+        run: npm publish --tag $Tag
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
           Tag: ${{ github.event.inputs.tag }}
-
