@@ -4,11 +4,11 @@ export const getImports = (code: string) => {
   return imports;
 };
 export const getInit = (code: string) => {
-  const re = /async function init\(input\) \{(.*?)return wasm;/ms;
+  const re = /async function init\(input\) \{(.*?)return (.*?);/ms;
   const imports = code.match(re)![0];
   return imports + "\n}";
 };
-export const getCode = (s: string, imports: string) => {
+export const getCode = (s: string) => {
   return `
 const decodeBase64 =
 typeof atob === "function"? atob: function (input) {
@@ -53,17 +53,15 @@ function intArrayFromBase64(s) {
 const wasmBase64 = "${s}";
 
 async function loadWasm(imports = {}) {
-    const bytes = intArrayFromBase64(wasmBase64);
-    return await WebAssembly.instantiate(bytes, imports);
+  const bytes = intArrayFromBase64(wasmBase64);
+  return await WebAssembly.instantiate(bytes, imports);
 }
 
 async function init() {
-    const imports = {};
-    ${imports}
-    const { instance, module } = await loadWasm(imports);
-    wasm = instance.exports;
-    init.__wbindgen_wasm_module = module;
-    return wasm;
+    if(wasm) return wasm;
+    const imports = getImports();
+    const { instance, module } = await loadWasm(imports);  
+    return finalizeInit(instance, module);
 }
 `;
 };

@@ -1,16 +1,17 @@
 import { readFileSync, readdirSync, existsSync } from "fs";
 import { join, relative } from "path";
-import { getCode, getImports, getInit } from "./util";
+import { getCode, getInit } from "./util";
 import { Command } from "commander";
 import { outputFileSync, removeSync } from "fs-extra";
 const program = new Command();
 const cwd = process.cwd();
-import { build } from "tsup";
+import { build } from "esbuild";
 
 program
   .argument("[inDir]")
   .option("-d, --dir [type]", "output dir", ".")
   .option("-o, --name [type]", "output name")
+  .option("-dts, --dts [type]", "copy dts")
   .action(async (inDir: string) => {
     const rootDir = join(cwd, inDir);
     const options = program.opts();
@@ -20,7 +21,7 @@ program
       return;
     }
     // wasm
-    const wasmName = fileList.find((file) => file.endsWith("_bg.wasm"))!;
+    const wasmName = fileList.find(file => file.endsWith("_bg.wasm"))!;
     const wasmPath = join(rootDir, wasmName);
     if (!existsSync(wasmPath)) {
       console.error(`${rootDir} has no wasm file ${wasmPath}`);
@@ -39,20 +40,23 @@ program
       return;
     }
     const rePath = relative(cwd, jsPath).replace("\\", "/");
-    const tsupName = "tsup_" + jsName;
-    const tsupPath = join(rootDir, "esm", tsupName);
+    const tsupPath = join(rootDir, "esm", jsName);
+
     await build({
-      entry: { [tsupName.slice(0, -3)]: rePath },
-      outDir: rootDir,
-      format: ["esm"],
-      legacyOutput: true,
+      entryPoints: [rePath],
+      outdir: join(rootDir, 'esm'),
+      bundle: true,
+      splitting: false,
+      format: 'esm',
+      target: 'esnext',
     });
+
+
     const jsStr = readFileSync(tsupPath, "utf8");
-    removeSync(join(rootDir, "esm"))
+    removeSync(join(rootDir, "esm"));
     const reg = getInit(jsStr);
     const bufferData = readFileSync(wasmPath).toString("base64");
-    const imports = getImports(jsStr);
-    const jsOutStr = jsStr.replace(reg, getCode(bufferData, imports));
+    const jsOutStr = jsStr.replace(reg, getCode(bufferData));
 
     // out
     const outName = !options.name
@@ -62,5 +66,13 @@ program
       : options.name + ".js";
     const outPath = join(cwd, options.dir, outName);
     outputFileSync(outPath, jsOutStr);
+
+    if (typeof options.dts !== "undefined") {
+      const dtsPath = join(cwd, options.dir, outName.replace(".js", ".d.ts"));
+      outputFileSync(
+        dtsPath,
+        readFileSync(jsPath.replace(".js", ".d.ts"), "utf-8")
+      );
+    }
   });
 program.parse();

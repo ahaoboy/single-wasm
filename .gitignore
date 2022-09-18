@@ -5,3 +5,4 @@ dist
 output
 pkg
 tmp
+/pnpm-lock.yaml

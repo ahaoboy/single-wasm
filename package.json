@@ -1,66 +1,42 @@
 {
-  "version": "0.5.14",
+  "version": "0.6.1",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "bin"
   ],
   "bin": {
-    "single-wasm": "./dist/index.js"
+    "single-wasm": "./bin/cli.js"
   },
   "engines": {
     "node": ">=10"
   },
   "scripts": {
-    "start": "tsdx watch",
-    "dev": "tsdx watch",
-    "build": "tsdx build",
-    "test": "echo ok",
-    "test:dev": "node ./dist/index.js  ./pkg -d tmp -o single.js",
-    "lint": "tsdx lint",
-    "size": "size-limit",
-    "analyze": "size-limit --why"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "tsdx lint"
-    }
+    "dev": "tsc -w",
+    "build": "tsc",
+    "test": "node ./bin/cli.js  ./data -d tmp -o single.js"
   },
   "prettier": {
     "printWidth": 80,
     "semi": true,
-    "singleQuote": true,
+    "singleQuote": false,
     "trailingComma": "es5"
   },
   "name": "single-wasm",
   "author": "阿豪boy",
-  "module": "dist/single-wasm.esm.js",
-  "size-limit": [
-    {
-      "path": "dist/single-wasm.cjs.production.min.js",
-      "limit": "10 KB"
-    },
-    {
-      "path": "dist/single-wasm.esm.js",
-      "limit": "10 KB"
-    }
-  ],
+  "module": "dist/index.js",
   "devDependencies": {
-    "@size-limit/preset-small-lib": "^5.0.3",
+    "@types/fs-extra": "^9.0.12",
     "@types/node": "^17.0.35",
-    "husky": "^7.0.2",
-    "size-limit": "^5.0.3",
-    "tsdx": "^0.14.1",
-    "tslib": "^2.3.1",
     "typescript": "^4.4.3"
   },
   "dependencies": {
-    "@types/fs-extra": "^9.0.12",
+    "tslib": "^2.4.0",
     "commander": "^8.2.0",
+    "esbuild": "^0.15.7",
     "fs-extra": "^10.0.0",
-    "minimist": "^1.2.5",
-    "regenerator-runtime": "^0.13.9",
-    "tsup": "^5.11.1"
+    "minimist": "^1.2.5"
   }
 }
