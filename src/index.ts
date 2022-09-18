@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync, existsSync } from "fs";
 import { join, relative } from "path";
-import { getCode, getInit } from "./util";
+import { getCode } from "./util";
 import { Command } from "commander";
 import { outputFileSync, removeSync } from "fs-extra";
 const program = new Command();
@@ -44,19 +44,23 @@ program
 
     await build({
       entryPoints: [rePath],
-      outdir: join(rootDir, 'esm'),
+      outdir: join(rootDir, "esm"),
       bundle: true,
       splitting: false,
-      format: 'esm',
-      target: 'esnext',
+      format: "esm",
+      target: "esnext",
     });
-
 
     const jsStr = readFileSync(tsupPath, "utf8");
     removeSync(join(rootDir, "esm"));
-    const reg = getInit(jsStr);
     const bufferData = readFileSync(wasmPath).toString("base64");
-    const jsOutStr = jsStr.replace(reg, getCode(bufferData));
+    const base64Path = join(cwd, options.dir, "base64.js");
+    outputFileSync(base64Path, `export const base64 = "${bufferData}";`);
+    const reg = /input = new URL\(.*?\)/ms;
+    const jsOutStr = jsStr.replace(
+      reg,
+      `input = import('./base64').then(m=>intArrayFromBase64(m.base64))`
+    );
 
     // out
     const outName = !options.name
@@ -65,8 +69,7 @@ program
       ? options.name
       : options.name + ".js";
     const outPath = join(cwd, options.dir, outName);
-    outputFileSync(outPath, jsOutStr);
-
+    outputFileSync(outPath, getCode() + "\n" + jsOutStr);
     if (typeof options.dts !== "undefined") {
       const dtsPath = join(cwd, options.dir, outName.replace(".js", ".d.ts"));
       outputFileSync(

@@ -1,14 +1,4 @@
-export const getImports = (code: string) => {
-  const re = /const imports = {};(.*?)if \(typeof input ===/ms;
-  const imports = code.match(re)![1];
-  return imports;
-};
-export const getInit = (code: string) => {
-  const re = /async function init\(input\) \{(.*?)return (.*?);/ms;
-  const imports = code.match(re)![0];
-  return imports + "\n}";
-};
-export const getCode = (s: string) => {
+export const getCode = () => {
   return `
 const decodeBase64 =
 typeof atob === "function"? atob: function (input) {
@@ -49,19 +39,6 @@ function intArrayFromBase64(s) {
   } catch (_) {
     throw new Error("Converting base64 string to bytes failed.");
   }
-}
-const wasmBase64 = "${s}";
-
-async function loadWasm(imports = {}) {
-  const bytes = intArrayFromBase64(wasmBase64);
-  return await WebAssembly.instantiate(bytes, imports);
-}
-
-async function init() {
-    if(wasm) return wasm;
-    const imports = getImports();
-    const { instance, module } = await loadWasm(imports);  
-    return finalizeInit(instance, module);
 }
 `;
 };
